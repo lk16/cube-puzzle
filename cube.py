@@ -110,63 +110,62 @@ class Solver:
 
     def solve(self) -> None:
         self.occupied = {START_CUBE}
+        self._solve(START_CUBE)
 
-        for direction in Direction:
-            self.directions.append(direction)
-            self.cubes_offset += 1
-            self.solve_direction(START_CUBE)
-            self.cubes_offset -= 1
-            self.directions.pop()
-
-    def solve_direction(self, last_cube: Coordinate) -> None:
+    def _solve(self, last_cube: Coordinate) -> None:
         if len(self.directions) > self.max:
             print(f"max: {len(self.directions)}", file=sys.stderr)
             self.max = len(self.directions)
 
         self.attempts += 1
 
-        if self.attempts % 1000000 == 0:
+        if self.attempts % 1_000_000 == 0:
             seconds = (datetime.now() - self.start_time).total_seconds()
             speed = self.attempts / seconds
 
             print(
-                f"{self.attempts / 1000000:>7.0f} M attempts | {seconds:6.1f} seconds | {speed:.0f} attempts / sec",
+                f"{self.attempts / 1_000_000:>7.0f} M attempts | {seconds:6.1f} seconds | {speed:.0f} attempts / sec",
                 file=sys.stderr,
             )
 
-        new_coords_count = CUBES[self.cubes_offset]
-
-        new_coords: Set[Coordinate] = set()
-
-        direction = self.directions[-1]
-
-        delta = COORD_DELTA[direction]
-
-        for i in range(1, new_coords_count + 1):
-            new_coords.add(last_cube + (delta * i))
-
-        if not all(coord.is_valid() for coord in new_coords):
-            return
-
-        if new_coords & self.occupied:
-            return
-
-        if self.cubes_offset == len(CUBES) - 1:
+        if self.cubes_offset == len(CUBES):
             self.print_solution()
             return
 
-        next_last_cube = last_cube + (delta * new_coords_count)
+        new_coords_count = CUBES[self.cubes_offset]
 
-        self.occupied |= new_coords
-        self.cubes_offset += 1
+        if self.directions:
+            # not first move
+            last_direction = self.directions[-1]
+            next_directions = NEXT_DIRECTIONS[last_direction]
+        else:
+            next_directions = list(Direction)
 
-        for next_direction in NEXT_DIRECTIONS[direction]:
-            self.directions.append(next_direction)
-            self.solve_direction(next_last_cube)
+        for direction in next_directions:
+            new_coords: Set[Coordinate] = set()
+
+            delta = COORD_DELTA[direction]
+
+            for i in range(1, new_coords_count + 1):
+                new_coords.add(last_cube + (delta * i))
+
+            if not all(coord.is_valid() for coord in new_coords):
+                continue
+
+            if new_coords & self.occupied:
+                continue
+
+            next_last_cube = last_cube + (delta * new_coords_count)
+
+            self.occupied |= new_coords
+            self.cubes_offset += 1
+
+            self.directions.append(direction)
+            self._solve(next_last_cube)
             self.directions.pop()
 
-        self.cubes_offset -= 1
-        self.occupied -= new_coords
+            self.cubes_offset -= 1
+            self.occupied -= new_coords
 
     def print_solution(self) -> None:
         print(" ".join(direction.name for direction in self.directions))
