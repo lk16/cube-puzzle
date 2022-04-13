@@ -5,12 +5,30 @@ from enum import IntEnum, auto
 from typing import Dict, List, Set
 
 CUBES = [
+    2,
+    3,
+    3,
     3,
     1,
     3,
     1,
+    3,
     1,
     1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    2,
+    1,
+    3,
+    2,
+    2,
+    1,
+    3,
     1,
     2,
     1,
@@ -20,31 +38,14 @@ CUBES = [
     1,
     2,
     1,
-    3,
-    1,
-    2,
-    2,
-    3,
-    1,
-    2,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
     1,
     1,
     1,
     3,
     1,
     3,
-    1,
-    3,
-    3,
-    3,
-    2,
 ]
+CUBE_SIZE = 4
 
 
 @dataclass(frozen=True)
@@ -60,7 +61,11 @@ class Coordinate:
         return Coordinate(v * self.x, v * self.y, v * self.z)
 
     def is_valid(self) -> bool:
-        return self.x in range(4) and self.y in range(4) and self.z in range(4)
+        return (
+            self.x in range(CUBE_SIZE)
+            and self.y in range(CUBE_SIZE)
+            and self.z in range(CUBE_SIZE)
+        )
 
 
 START_CUBE = Coordinate(0, 0, 0)
