@@ -188,7 +188,7 @@ class Solver:
             f"{self.attempts:>12,} attempts"
             + f" | {seconds:5,.0f} sec"
             + f" | {speed:,.0f} attempts / sec"
-            + f" | {len(self.solutions)} solutions found"
+            + f" | {len(self.solutions):>3} solutions found"
             + f" | searching for ({self.start_cube.x},{self.start_cube.y},{self.start_cube.z})",
             file=sys.stderr,
         )
