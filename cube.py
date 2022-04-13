@@ -1,4 +1,5 @@
 import sys
+from copy import deepcopy
 from dataclasses import dataclass
 from datetime import datetime
 from enum import IntEnum, auto
@@ -77,29 +78,23 @@ class Solver:
         self.max = 0
         self.start_time = datetime.now()
         self.attempts = 0
+        self.solutions: List[List[Direction]] = []
 
     def solve(self) -> None:
         self.occupied = {START_CUBE}
         self._solve(START_CUBE)
+        self.print_solutions()
+        self.print_stats()
 
     def _solve(self, last_cube: Coordinate) -> None:
-        if len(self.directions) > self.max:
-            print(f"max: {len(self.directions)}", file=sys.stderr)
-            self.max = len(self.directions)
-
         self.attempts += 1
 
         if self.attempts % 10_000 == 0:
-            seconds = (datetime.now() - self.start_time).total_seconds()
-            speed = self.attempts / seconds
+            self.print_stats()
 
-            print(
-                f"{self.attempts / 10_000:>7.0f}0K attempts | {seconds:6.1f} seconds | {speed:.0f} attempts / sec",
-                file=sys.stderr,
-            )
-
-        if self.cubes_offset == len(CUBES):
-            self.print_solution()
+        if len(self.directions) == len(CUBES):
+            solution = deepcopy(self.directions)
+            self.solutions.append(solution)
             return
 
         new_coords_count = CUBES[self.cubes_offset]
@@ -137,8 +132,26 @@ class Solver:
             self.cubes_offset -= 1
             self.occupied -= new_coords
 
-    def print_solution(self) -> None:
-        print(" ".join(direction.name for direction in self.directions))
+    def print_stats(self) -> None:
+        seconds = (datetime.now() - self.start_time).total_seconds()
+        speed = self.attempts / seconds
+
+        print(
+            f"{self.attempts / 10_000:>7.0f}0K attempts"
+            + f" | {seconds:6.1f} seconds"
+            + f" | {speed:.0f} attempts / sec"
+            + f" | {len(self.solutions)} solutions found",
+            file=sys.stderr,
+        )
+
+    def print_solutions(self) -> None:
+        for solution in self.solutions:
+            print(
+                ", ".join(
+                    f"{step.name} {length}" for step, length in zip(solution, CUBES)
+                )
+            )
+            print("---")
 
 
 if __name__ == "__main__":
