@@ -1,7 +1,7 @@
 import sys
 from copy import deepcopy
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timedelta
 from enum import IntEnum, auto
 from typing import Dict, List, Set
 
@@ -12,6 +12,8 @@ CUBES = [
 # fmt: on
 
 CUBE_SIZE = 4
+
+PRINT_INTERVAL = timedelta(seconds=5)
 
 
 @dataclass(frozen=True)
@@ -77,6 +79,7 @@ class Solver:
         self.directions: List[Direction] = []
         self.max = 0
         self.start_time = datetime.now()
+        self.last_stats = self.start_time
         self.attempts = 0
         self.solutions: List[List[Direction]] = []
 
@@ -89,7 +92,9 @@ class Solver:
     def _solve(self, last_cube: Coordinate) -> None:
         self.attempts += 1
 
-        if self.attempts % 10_000 == 0:
+        now = datetime.now()
+        if now - self.last_stats > PRINT_INTERVAL:
+            self.last_stats = now
             self.print_stats()
 
         if len(self.directions) == len(CUBES):
@@ -137,9 +142,9 @@ class Solver:
         speed = self.attempts / seconds
 
         print(
-            f"{self.attempts / 10_000:>7.0f}0K attempts"
-            + f" | {seconds:6.1f} seconds"
-            + f" | {speed:.0f} attempts / sec"
+            f"{self.attempts:>12,} attempts"
+            + f" | {seconds:5,.0f} sec"
+            + f" | {speed:,.0f} attempts / sec"
             + f" | {len(self.solutions)} solutions found",
             file=sys.stderr,
         )
