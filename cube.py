@@ -124,11 +124,13 @@ class Solver:
 
             delta = COORD_DELTA[direction]
 
+            next_last_cube = last_cube + (delta * new_coords_count)
+
+            if not next_last_cube.is_valid():
+                continue
+
             for i in range(1, new_coords_count + 1):
                 new_coords.add(last_cube + (delta * i))
-
-            if not all(coord.is_valid() for coord in new_coords):
-                continue
 
             if new_coords & self.occupied:
                 continue
