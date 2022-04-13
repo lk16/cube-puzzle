@@ -1,6 +1,5 @@
 import sys
 from copy import deepcopy
-from dataclasses import dataclass
 from datetime import datetime, timedelta
 from enum import IntEnum, auto
 from typing import Dict, List, Set
@@ -13,14 +12,14 @@ CUBES = [
 
 CUBE_SIZE = 4
 
-PRINT_INTERVAL = timedelta(seconds=5)
+PRINT_INTERVAL = timedelta(seconds=1)
 
 
-@dataclass(frozen=True)
 class Coordinate:
-    x: int
-    y: int
-    z: int
+    def __init__(self, x: int, y: int, z: int) -> None:
+        self.x = x
+        self.y = y
+        self.z = z
 
     def __add__(self, coord: "Coordinate") -> "Coordinate":
         return Coordinate(self.x + coord.x, self.y + coord.y, self.z + coord.z)
@@ -34,6 +33,15 @@ class Coordinate:
             and self.y in range(CUBE_SIZE)
             and self.z in range(CUBE_SIZE)
         )
+
+    def __hash__(self) -> int:
+        return hash((self.x, self.y, self.z))
+
+    def __eq__(self, o: object) -> bool:
+        if not isinstance(o, Coordinate):
+            return False
+
+        return o.x == self.x and o.y == self.y and o.z == self.z
 
 
 START_CUBE = Coordinate(0, 0, 2)
