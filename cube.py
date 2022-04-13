@@ -4,47 +4,12 @@ from datetime import datetime
 from enum import IntEnum, auto
 from typing import Dict, List, Set
 
+# fmt: off
 CUBES = [
-    2,
-    3,
-    3,
-    3,
-    1,
-    3,
-    1,
-    3,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    2,
-    1,
-    3,
-    2,
-    2,
-    1,
-    3,
-    1,
-    2,
-    1,
-    1,
-    1,
-    1,
-    1,
-    2,
-    1,
-    1,
-    1,
-    1,
-    3,
-    1,
-    3,
+    2, 3, 3, 3, 1, 3, 1, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 3, 2, 2, 1, 3, 1, 2, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 3, 1, 3
 ]
+# fmt: on
+
 CUBE_SIZE = 4
 
 
@@ -68,7 +33,7 @@ class Coordinate:
         )
 
 
-START_CUBE = Coordinate(0, 0, 0)
+START_CUBE = Coordinate(0, 0, 2)
 
 
 class Direction(IntEnum):
@@ -124,12 +89,12 @@ class Solver:
 
         self.attempts += 1
 
-        if self.attempts % 1_000_000 == 0:
+        if self.attempts % 10_000 == 0:
             seconds = (datetime.now() - self.start_time).total_seconds()
             speed = self.attempts / seconds
 
             print(
-                f"{self.attempts / 1_000_000:>7.0f} M attempts | {seconds:6.1f} seconds | {speed:.0f} attempts / sec",
+                f"{self.attempts / 10_000:>7.0f}0K attempts | {seconds:6.1f} seconds | {speed:.0f} attempts / sec",
                 file=sys.stderr,
             )
 
