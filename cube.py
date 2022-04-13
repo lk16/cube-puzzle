@@ -48,9 +48,6 @@ class Coordinate:
         return o.x == self.x and o.y == self.y and o.z == self.z
 
 
-START_CUBE = Coordinate(0, 0, 2)
-
-
 class Direction(IntEnum):
     UP = auto()
     DOWN = auto()
@@ -84,30 +81,52 @@ COORD_DELTA: Dict[IntEnum, Coordinate] = {
 }
 
 
+class Solution:
+    def __init__(self, start: Coordinate, directions: List[Direction]) -> None:
+        self.start = start
+        self.directions = directions
+
+    def __str__(self) -> str:
+        formatted = f"START: {self.start.x},{self.start.y},{self.start.z} MOVES: "
+        formatted += ", ".join(
+            f"{direction.name} {move_size}"
+            for direction, move_size in zip(self.directions, MOVE_SIZES)
+        )
+        return formatted
+
+
 class Solver:
 
     __slots__ = (
-        "occupied",
-        "move_id",
-        "directions",
-        "start_time",
-        "last_stats",
         "attempts",
+        "directions",
+        "last_stats",
+        "move_id",
+        "occupied",
         "solutions",
+        "start_cube",
+        "start_time",
     )
 
     def __init__(self) -> None:
         self.occupied: Set[Coordinate] = set()
         self.move_id = 0
+        self.start_cube = Coordinate(0, 0, 0)
         self.directions: List[Direction] = []
         self.start_time = datetime.now()
         self.last_stats = self.start_time
         self.attempts = 0
-        self.solutions: List[List[Direction]] = []
+        self.solutions: List[Solution] = []
 
     def solve(self) -> None:
-        self.occupied = {START_CUBE}
-        self._solve(START_CUBE)
+        for x in range(CUBE_SIZE):
+            for y in range(CUBE_SIZE):
+                for z in range(CUBE_SIZE):
+                    self.start_cube = Coordinate(x, y, z)
+
+                    self.occupied = {self.start_cube}
+                    self._solve(self.start_cube)
+
         self.print_solutions()
         self.print_stats()
 
@@ -120,7 +139,7 @@ class Solver:
             self.print_stats()
 
         if len(self.directions) == len(MOVE_SIZES):
-            solution = deepcopy(self.directions)
+            solution = Solution(self.start_cube, deepcopy(self.directions))
             self.solutions.append(solution)
             return
 
@@ -169,18 +188,14 @@ class Solver:
             f"{self.attempts:>12,} attempts"
             + f" | {seconds:5,.0f} sec"
             + f" | {speed:,.0f} attempts / sec"
-            + f" | {len(self.solutions)} solutions found",
+            + f" | {len(self.solutions)} solutions found"
+            + f" | searching for ({self.start_cube.x},{self.start_cube.y},{self.start_cube.z})",
             file=sys.stderr,
         )
 
     def print_solutions(self) -> None:
         for solution in self.solutions:
-            print(
-                ", ".join(
-                    f"{direction.name} {move_size}"
-                    for direction, move_size in zip(solution, MOVE_SIZES)
-                )
-            )
+            print(solution)
             print("---")
 
 
