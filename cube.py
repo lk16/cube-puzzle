@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import sys
 from copy import deepcopy
 from datetime import datetime, timedelta
@@ -5,7 +7,7 @@ from enum import IntEnum, auto
 from typing import Dict, List, Set
 
 # fmt: off
-CUBES = [
+MOVE_SIZES = [
     2, 3, 3, 3, 1, 3, 1, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 3, 2, 2, 1, 3, 1, 2, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 3, 1, 3
 ]
 # fmt: on
@@ -16,6 +18,8 @@ PRINT_INTERVAL = timedelta(seconds=1)
 
 
 class Coordinate:
+    __slots__ = "x", "y", "z"
+
     def __init__(self, x: int, y: int, z: int) -> None:
         self.x = x
         self.y = y
@@ -83,7 +87,7 @@ COORD_DELTA: Dict[IntEnum, Coordinate] = {
 class Solver:
     def __init__(self) -> None:
         self.occupied: Set[Coordinate] = set()
-        self.cubes_offset = 0
+        self.move_id = 0
         self.directions: List[Direction] = []
         self.max = 0
         self.start_time = datetime.now()
@@ -105,12 +109,12 @@ class Solver:
             self.last_stats = now
             self.print_stats()
 
-        if len(self.directions) == len(CUBES):
+        if len(self.directions) == len(MOVE_SIZES):
             solution = deepcopy(self.directions)
             self.solutions.append(solution)
             return
 
-        new_coords_count = CUBES[self.cubes_offset]
+        new_coords_count = MOVE_SIZES[self.move_id]
 
         if self.directions:
             # not first move
@@ -138,13 +142,13 @@ class Solver:
             next_last_cube = last_cube + (delta * new_coords_count)
 
             self.occupied |= new_coords
-            self.cubes_offset += 1
+            self.move_id += 1
 
             self.directions.append(direction)
             self._solve(next_last_cube)
             self.directions.pop()
 
-            self.cubes_offset -= 1
+            self.move_id -= 1
             self.occupied -= new_coords
 
     def print_stats(self) -> None:
@@ -163,7 +167,8 @@ class Solver:
         for solution in self.solutions:
             print(
                 ", ".join(
-                    f"{step.name} {length}" for step, length in zip(solution, CUBES)
+                    f"{direction.name} {move_size}"
+                    for direction, move_size in zip(solution, MOVE_SIZES)
                 )
             )
             print("---")
