@@ -90,7 +90,6 @@ class Solver:
         "occupied",
         "move_id",
         "directions",
-        "max",
         "start_time",
         "last_stats",
         "attempts",
@@ -101,7 +100,6 @@ class Solver:
         self.occupied: Set[Coordinate] = set()
         self.move_id = 0
         self.directions: List[Direction] = []
-        self.max = 0
         self.start_time = datetime.now()
         self.last_stats = self.start_time
         self.attempts = 0
