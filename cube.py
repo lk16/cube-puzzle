@@ -85,6 +85,18 @@ COORD_DELTA: Dict[IntEnum, Coordinate] = {
 
 
 class Solver:
+
+    __slots__ = (
+        "occupied",
+        "move_id",
+        "directions",
+        "max",
+        "start_time",
+        "last_stats",
+        "attempts",
+        "solutions",
+    )
+
     def __init__(self) -> None:
         self.occupied: Set[Coordinate] = set()
         self.move_id = 0
