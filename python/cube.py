@@ -48,34 +48,34 @@ class Coordinate:
 
 class Direction(IntEnum):
     UP = auto()
-    DOWN = auto()
     LEFT = auto()
-    RIGHT = auto()
-    FORWARD = auto()
     BACK = auto()
+    FORWARD = auto()
+    RIGHT = auto()
+    DOWN = auto()
 
 
 NEXT_DIRECTIONS: Dict[Direction, List[Direction]] = {
-    Direction.UP: [Direction.LEFT, Direction.RIGHT, Direction.FORWARD, Direction.BACK],
+    Direction.UP: [Direction.LEFT, Direction.BACK, Direction.FORWARD, Direction.RIGHT],
     Direction.DOWN: [
         Direction.LEFT,
-        Direction.RIGHT,
-        Direction.FORWARD,
         Direction.BACK,
+        Direction.FORWARD,
+        Direction.RIGHT,
     ],
-    Direction.LEFT: [Direction.UP, Direction.DOWN, Direction.FORWARD, Direction.BACK],
-    Direction.RIGHT: [Direction.UP, Direction.DOWN, Direction.FORWARD, Direction.BACK],
-    Direction.FORWARD: [Direction.UP, Direction.DOWN, Direction.LEFT, Direction.RIGHT],
-    Direction.BACK: [Direction.UP, Direction.DOWN, Direction.LEFT, Direction.RIGHT],
+    Direction.LEFT: [Direction.UP, Direction.BACK, Direction.FORWARD, Direction.DOWN],
+    Direction.RIGHT: [Direction.UP, Direction.BACK, Direction.FORWARD, Direction.DOWN],
+    Direction.FORWARD: [Direction.UP, Direction.LEFT, Direction.RIGHT, Direction.DOWN],
+    Direction.BACK: [Direction.UP, Direction.LEFT, Direction.RIGHT, Direction.DOWN],
 }
 
 COORD_DELTA: Dict[IntEnum, Coordinate] = {
     Direction.UP: Coordinate(0, 1, 0),
-    Direction.DOWN: Coordinate(0, -1, 0),
     Direction.LEFT: Coordinate(-1, 0, 0),
-    Direction.RIGHT: Coordinate(1, 0, 0),
-    Direction.FORWARD: Coordinate(0, 0, -1),
     Direction.BACK: Coordinate(0, 0, 1),
+    Direction.FORWARD: Coordinate(0, 0, -1),
+    Direction.RIGHT: Coordinate(1, 0, 0),
+    Direction.DOWN: Coordinate(0, -1, 0),
 }
 
 
@@ -190,7 +190,6 @@ class Solver:
     def print_solutions(self) -> None:
         for solution in self.solutions:
             print(solution)
-            print("---")
 
 
 if __name__ == "__main__":

@@ -8,11 +8,11 @@
 #define NUM_COORDS (CUBE_SIZE * CUBE_SIZE * CUBE_SIZE)
 
 #define UP (0)
-#define DOWN (5)
 #define LEFT (1)
-#define RIGHT (4)
-#define FORWARD (3)
 #define BACK (2)
+#define FORWARD (3)
+#define RIGHT (4)
+#define DOWN (5)
 
 #define NUM_DIRECTIONS (6)
 
@@ -119,7 +119,7 @@ void solver_print_solution(struct solver_t *solver) {
         );
     }
 
-    printf("\n---\n");
+    printf("\n");
 }
 
 void solver_solve(struct solver_t *solver, int last_cube) {
