@@ -1,27 +1,48 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <time.h>
+#include <assert.h>
 
-#define total_moves (39)
+#define CUBE_SIZE (4)
 
-const int moves_sizes[total_moves] = {
+#define NUM_COORDS (CUBE_SIZE * CUBE_SIZE * CUBE_SIZE)
+
+#define UP (0)
+#define DOWN (5)
+#define LEFT (1)
+#define RIGHT (4)
+#define FORWARD (3)
+#define BACK (2)
+
+#define NUM_DIRECTIONS (6)
+
+const int direction_diff[NUM_DIRECTIONS] = {
+    CUBE_SIZE, // UP
+    -CUBE_SIZE * CUBE_SIZE, // LEFT
+    1, // BACK
+    -1, // FORWARD
+    CUBE_SIZE * CUBE_SIZE, // RIGHT
+    -CUBE_SIZE // DOWN
+};
+
+const char *direction_names[NUM_DIRECTIONS] = {
+    "UP",
+    "LEFT",
+    "BACK",
+    "FORWARD",
+    "RIGHT",
+    "DOWN"
+};
+
+
+#define TOTAL_MOVES (39)
+
+const int moves_sizes[TOTAL_MOVES] = {
     2, 3, 3, 3, 1, 3, 1, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 3, 2, 2, 1, 3, 1, 2, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 3, 1, 3
 };
 
-const int cube_size = 4;
-
-enum direction {
-    UP = 0,
-    DOWN = 5,
-    LEFT = 1,
-    RIGHT = 4,
-    FORWARD = 3,
-    BACK = 2
-};
-
-
 int get_x(int c) {
-    return c & 3;
+    return (c >> 4) & 3;
 }
 
 int get_y(int c) {
@@ -29,15 +50,15 @@ int get_y(int c) {
 }
 
 int get_z(int c) {
-    return (c >> 4) & 3;
+    return c & 3;
 }
 
 struct solver_t {
     uint64_t attempts;
-    enum direction directions[total_moves];
+    int directions[TOTAL_MOVES];
     int move_id;
     uint64_t occupied;
-    int solutions;
+    int solutions_found;
     int start_cube;
     int start_time;
 };
@@ -46,17 +67,54 @@ void solver_init(struct solver_t *solver) {
     solver->attempts = 0;
     solver->move_id = 0;
     solver->occupied = 0;
-    solver->solutions = 0;
+    solver->solutions_found = 0;
     solver->start_cube = 0;
     solver->start_time = (int)time(NULL);
 }
 
 void solver_print_stats(struct solver_t *solver) {
-    (void)solver;
-    printf("TODO print stats\n");
+    int seconds = time(NULL) - solver->start_time;
+    double speed = ((double)solver->attempts) / ((double)seconds);
+
+    fprintf(
+        stderr,
+        "%12ld attempts"
+        " | %5d sec"
+        " | %8.0f attempts / sec"
+        " | %d solutions found"
+        " | searching for (%d,%d,%d)\n",
+        solver->attempts,
+        seconds,
+        speed,
+        solver->solutions_found,
+        get_x(solver->start_cube),
+        get_y(solver->start_cube),
+        get_z(solver->start_cube)
+    );
 }
 
+void solver_print_solution(struct solver_t *solver) {
+    printf(
+        "START: %d,%d,%d MOVES: ",
+        get_x(solver->start_cube),
+        get_y(solver->start_cube),
+        get_z(solver->start_cube)
+    );
 
+    for (int move_id = 0; move_id < TOTAL_MOVES; move_id++) {
+        if (move_id != 0) {
+            printf(", ");
+        }
+
+        printf(
+            "%s %d",
+            direction_names[solver->directions[move_id]],
+            moves_sizes[move_id]
+        );
+    }
+
+    printf("\n---\n");
+}
 
 void solver_solve(struct solver_t *solver, int last_cube) {
     (void)last_cube;
@@ -67,99 +125,99 @@ void solver_solve(struct solver_t *solver, int last_cube) {
         solver_print_stats(solver);
     }
 
-    // TODO
+    if (solver->move_id == TOTAL_MOVES) {
+        solver_print_solution(solver);
+        return;
+    }
+
+    int move_size = moves_sizes[solver->move_id];
+
+    for (int direction = 0; direction < NUM_DIRECTIONS; direction++) {
+        if (solver->move_id != 0) {
+            int last_move = solver->directions[solver->move_id - 1];
+
+            if (direction == last_move || direction == (5 - last_move)) {
+                continue;
+            }
+        }
+
+        int is_valid_move = 1;
+
+        switch (direction) {
+            case UP:
+                if (get_y(last_cube) + move_size >= CUBE_SIZE) {
+                    is_valid_move = 0;
+                }
+                break;
+            case DOWN:
+                if (get_y(last_cube) - move_size < 0) {
+                    is_valid_move = 0;
+                }
+                break;
+            case LEFT:
+                if (get_z(last_cube) - move_size < 0) {
+                    is_valid_move = 0;
+                }
+                break;
+            case RIGHT:
+                if (get_z(last_cube) + move_size >= CUBE_SIZE) {
+                    is_valid_move = 0;
+                }
+                break;
+            case FORWARD:
+                if (get_z(last_cube) - move_size < 0) {
+                    is_valid_move = 0;
+                }
+                break;
+            case BACK:
+                if (get_z(last_cube) + move_size >= CUBE_SIZE) {
+                    is_valid_move = 0;
+                }
+                break;
+            default:
+                assert(0);
+                break;
+        }
+
+        if (!is_valid_move) {
+            continue;
+        }
 
 
+        uint64_t move_occupy_set = 0;
+        for (int step = 1; step <= move_size; step++) {
+            int new_coord = last_cube + (direction_diff[direction] * step);
+            assert(new_coord >= 0);
+            assert(new_coord < 64);
 
+            move_occupy_set |= (1ull << new_coord);
+        }
+
+        if (solver->occupied & move_occupy_set) {
+            continue;
+        }
+
+        int next_last_cube = last_cube + (direction_diff[direction] * move_size);
+
+        solver->occupied |= move_occupy_set;
+        solver->move_id++;
+        solver_solve(solver, next_last_cube);
+        solver->move_id--;
+        solver->occupied &= (~move_occupy_set);
+    }
 }
 
 void solver_solve_all(struct solver_t *solver) {
-    for (int coord_id = 0; coord_id < cube_size * cube_size * cube_size; coord_id++) {
-        solver->occupied = (1 << coord_id);
-        solver_solve(solver, coord_id);
+    for (int start_cube = 0; start_cube < NUM_COORDS; start_cube++) {
+        solver->start_cube = start_cube;
+        solver->occupied = (1ull << start_cube);
+        solver_solve(solver, start_cube);
     }
-
-
 }
 
-
-// class Solver:
-
-//     def _solve(self, last_cube: Coordinate) -> None:
-//         self.attempts += 1
-
-//         now = datetime.now()
-//         if self.attempts % 100_000 == 0:
-//             self.print_stats()
-
-//         if len(self.directions) == len(MOVE_SIZES):
-//             solution = Solution(self.start_cube, deepcopy(self.directions))
-//             self.solutions.append(solution)
-//             return
-
-//         new_coords_count = MOVE_SIZES[self.move_id]
-
-//         if self.directions:
-//             # not first move
-//             last_direction = self.directions[-1]
-//             next_directions = NEXT_DIRECTIONS[last_direction]
-//         else:
-//             next_directions = list(Direction)
-
-//         for direction in next_directions:
-//             new_coords: Set[Coordinate] = set()
-
-//             delta = COORD_DELTA[direction]
-
-//             next_last_cube = last_cube + (delta * new_coords_count)
-
-//             if not next_last_cube.is_valid():
-//                 continue
-
-//             for i in range(1, new_coords_count + 1):
-//                 new_coords.add(last_cube + (delta * i))
-
-//             if new_coords & self.occupied:
-//                 continue
-
-//             next_last_cube = last_cube + (delta * new_coords_count)
-
-//             self.occupied |= new_coords
-//             self.move_id += 1
-
-//             self.directions.append(direction)
-//             self._solve(next_last_cube)
-//             self.directions.pop()
-
-//             self.move_id -= 1
-//             self.occupied -= new_coords
-
-//     def print_stats(self) -> None:
-//         seconds = (datetime.now() - self.start_time).total_seconds()
-//         speed = self.attempts / seconds
-
-//         print(
-//             f"{self.attempts:>12,} attempts"
-//             + f" | {seconds:5,.0f} sec"
-//             + f" | {speed:,.0f} attempts / sec"
-//             + f" | {len(self.solutions):>3} solutions found"
-//             + f" | searching for ({self.start_cube.x},{self.start_cube.y},{self.start_cube.z})",
-//             file=sys.stderr,
-//         )
-
-//     def print_solutions(self) -> None:
-//         for solution in self.solutions:
-//             print(solution)
-//             print("---")
-
-
-// if __name__ == "__main__":
-//     Solver().solve()
-
 int main() {
-    printf("Hello world\n");
     struct solver_t solver;
     solver_init(&solver);
-
+    solver_solve_all(&solver);
     return 0;
 }
