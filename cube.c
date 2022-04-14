@@ -117,8 +117,6 @@ void solver_print_solution(struct solver_t *solver) {
 }
 
 void solver_solve(struct solver_t *solver, int last_cube) {
-    (void)last_cube;
-
     solver->attempts++;
 
     if (solver->attempts % 100000 == 0) {
@@ -126,6 +124,7 @@ void solver_solve(struct solver_t *solver, int last_cube) {
     }
 
     if (solver->move_id == TOTAL_MOVES) {
+        solver->solutions_found++;
         solver_print_solution(solver);
         return;
     }
@@ -155,12 +154,12 @@ void solver_solve(struct solver_t *solver, int last_cube) {
                 }
                 break;
             case LEFT:
-                if (get_z(last_cube) - move_size < 0) {
+                if (get_x(last_cube) - move_size < 0) {
                     is_valid_move = 0;
                 }
                 break;
             case RIGHT:
-                if (get_z(last_cube) + move_size >= CUBE_SIZE) {
+                if (get_x(last_cube) + move_size >= CUBE_SIZE) {
                     is_valid_move = 0;
                 }
                 break;
@@ -200,6 +199,7 @@ void solver_solve(struct solver_t *solver, int last_cube) {
         int next_last_cube = last_cube + (direction_diff[direction] * move_size);
 
         solver->occupied |= move_occupy_set;
+        solver->directions[solver->move_id] = direction;
         solver->move_id++;
         solver_solve(solver, next_last_cube);
         solver->move_id--;
@@ -213,6 +213,7 @@ void solver_solve_all(struct solver_t *solver) {
         solver->occupied = (1ull << start_cube);
         solver_solve(solver, start_cube);
     }
+    solver_print_stats(solver);
 }
 
 int main() {
