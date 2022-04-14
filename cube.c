@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdint.h>
-#include <time.h>
+#include <sys/time.h>
 #include <assert.h>
 
 #define CUBE_SIZE (4)
@@ -53,6 +53,14 @@ int get_z(int c) {
     return c & 3;
 }
 
+double get_current_time() {
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+
+    return ((double)tv.tv_sec) + (((double)tv.tv_usec) / 1000000);
+}
+
+
 struct solver_t {
     uint64_t attempts;
     int directions[TOTAL_MOVES];
@@ -60,7 +68,7 @@ struct solver_t {
     uint64_t occupied;
     int solutions_found;
     int start_cube;
-    int start_time;
+    double start_time;
 };
 
 void solver_init(struct solver_t *solver) {
@@ -69,19 +77,19 @@ void solver_init(struct solver_t *solver) {
     solver->occupied = 0;
     solver->solutions_found = 0;
     solver->start_cube = 0;
-    solver->start_time = (int)time(NULL);
+    solver->start_time = 0.0;
 }
 
 void solver_print_stats(struct solver_t *solver) {
-    int seconds = time(NULL) - solver->start_time;
-    double speed = ((double)solver->attempts) / ((double)seconds);
+    double seconds = get_current_time() - solver->start_time;
+    double speed = ((double)solver->attempts) / seconds;
 
     fprintf(
         stderr,
         "%12ld attempts"
-        " | %5d sec"
+        " | %7.4f sec"
         " | %8.0f attempts / sec"
-        " | %d solutions found"
+        " | %3d solutions found"
         " | searching for (%d,%d,%d)\n",
         solver->attempts,
         seconds,
@@ -119,7 +127,7 @@ void solver_print_solution(struct solver_t *solver) {
 void solver_solve(struct solver_t *solver, int last_cube) {
     solver->attempts++;
 
-    if (solver->attempts % 100000 == 0) {
+    if (solver->attempts % 10000000 == 0) {
         solver_print_stats(solver);
     }
 
@@ -208,6 +216,7 @@ void solver_solve(struct solver_t *solver, int last_cube) {
 }
 
 void solver_solve_all(struct solver_t *solver) {
+    solver->start_time = get_current_time();
     for (int start_cube = 0; start_cube < NUM_COORDS; start_cube++) {
         solver->start_cube = start_cube;
         solver->occupied = (1ull << start_cube);
