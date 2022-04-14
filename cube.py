@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import sys
 from copy import deepcopy
-from datetime import datetime, timedelta
+from datetime import datetime
 from enum import IntEnum, auto
 from typing import Dict, List, Set
 
@@ -13,8 +13,6 @@ MOVE_SIZES = [
 # fmt: on
 
 CUBE_SIZE = 4
-
-PRINT_INTERVAL = timedelta(seconds=1)
 
 
 class Coordinate:
@@ -100,7 +98,6 @@ class Solver:
     __slots__ = (
         "attempts",
         "directions",
-        "last_stats",
         "move_id",
         "occupied",
         "solutions",
@@ -114,7 +111,6 @@ class Solver:
         self.start_cube = Coordinate(0, 0, 0)
         self.directions: List[Direction] = []
         self.start_time = datetime.now()
-        self.last_stats = self.start_time
         self.attempts = 0
         self.solutions: List[Solution] = []
 
@@ -133,9 +129,7 @@ class Solver:
     def _solve(self, last_cube: Coordinate) -> None:
         self.attempts += 1
 
-        now = datetime.now()
-        if now - self.last_stats > PRINT_INTERVAL:
-            self.last_stats = now
+        if self.attempts % 100_000 == 0:
             self.print_stats()
 
         if len(self.directions) == len(MOVE_SIZES):
