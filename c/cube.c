@@ -34,7 +34,6 @@ const char *direction_names[NUM_DIRECTIONS] = {
     "DOWN"
 };
 
-
 #define TOTAL_MOVES (39)
 
 const int moves_sizes[TOTAL_MOVES] = {
@@ -59,7 +58,6 @@ double get_current_time() {
 
     return ((double)tv.tv_sec) + (((double)tv.tv_usec) / 1000000);
 }
-
 
 struct solver_t {
     uint64_t attempts;
@@ -189,7 +187,6 @@ void solver_solve(struct solver_t *solver, int last_cube) {
         if (!is_valid_move) {
             continue;
         }
-
 
         uint64_t move_occupy_set = 0;
         for (int step = 1; step <= move_size; step++) {

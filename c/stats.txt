@@ -1,0 +1,6 @@
+    10000000 attempts |  0.3142 sec | 31828995 attempts / sec |  40 solutions found | searching for (0,2,0)
+    20000000 attempts |  0.6228 sec | 32110512 attempts / sec |  74 solutions found | searching for (1,0,3)
+    30000000 attempts |  0.9307 sec | 32235468 attempts / sec | 108 solutions found | searching for (2,0,3)
+    40000000 attempts |  1.2423 sec | 32198786 attempts / sec | 144 solutions found | searching for (3,1,0)
+    50000000 attempts |  1.5523 sec | 32210437 attempts / sec | 186 solutions found | searching for (3,3,2)
+    52181872 attempts |  1.6189 sec | 32232443 attempts / sec | 192 solutions found | searching for (3,3,3)
