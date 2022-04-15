@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <sys/time.h>
-#include <assert.h>
 
 #define CUBE_SIZE (4)
 
@@ -179,9 +178,6 @@ void solver_solve(struct solver_t *solver, int last_cube) {
                     is_valid_move = 0;
                 }
                 break;
-            default:
-                assert(0);
-                break;
         }
 
         if (!is_valid_move) {
@@ -191,9 +187,6 @@ void solver_solve(struct solver_t *solver, int last_cube) {
         uint64_t move_occupy_set = 0;
         for (int step = 1; step <= move_size; step++) {
             int new_coord = last_cube + (direction_diff[direction] * step);
-            assert(new_coord >= 0);
-            assert(new_coord < 64);
-
             move_occupy_set |= (1ull << new_coord);
         }
 
